@@ -95,7 +95,8 @@ const EmailConverter = () => {
         break;
       case "notice":
         ref = noticeOutputRef;
-        content = `${title}\n\n${description}\n\n${output.map((item) => item.atIdSpace).join(" ")}`;
+        // Add markdown formatting: # for title and > for @IDs
+        content = `# ${title}\n\n${description}\n\n> ${output.map((item) => item.atIdSpace).join(" ")}`;
         break;
     }
 
@@ -300,7 +301,7 @@ const EmailConverter = () => {
 
             <div className="w-full">
               <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-medium text-gray-700">공지 형식</label>
+                <label className="text-sm font-medium text-gray-700">공지 형식 (마크다운)</label>
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -314,7 +315,7 @@ const EmailConverter = () => {
               <Textarea 
                 readOnly 
                 ref={noticeOutputRef}
-                value={`${title}\n\n${description}\n\n${output.map((item) => item.atIdSpace).join(" ")}`}
+                value={`# ${title}\n\n${description}\n\n> ${output.map((item) => item.atIdSpace).join(" ")}`}
                 className="min-h-[120px]"
               />
             </div>
