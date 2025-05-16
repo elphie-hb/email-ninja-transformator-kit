@@ -11,15 +11,17 @@ type ConversionType = "emailToId" | "idToEmail";
 
 const EmailConverter = () => {
   const [input, setInput] = useState<string>("");
-  const [output, setOutput] = useState<{ id: string; atId: string; email?: string }[]>([]);
+  const [output, setOutput] = useState<{ id: string; atId: string; atIdSpace: string; email?: string }[]>([]);
   const [conversionType, setConversionType] = useState<ConversionType>("emailToId");
-  const [copied, setCopied] = useState<{ id: boolean; atId: boolean; email: boolean }>({
+  const [copied, setCopied] = useState<{ id: boolean; atId: boolean; atIdSpace: boolean; email: boolean }>({
     id: false,
     atId: false,
+    atIdSpace: false,
     email: false,
   });
   const idOutputRef = useRef<HTMLTextAreaElement>(null);
   const atIdOutputRef = useRef<HTMLTextAreaElement>(null);
+  const atIdSpaceOutputRef = useRef<HTMLTextAreaElement>(null);
   const emailOutputRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
@@ -35,22 +37,37 @@ const EmailConverter = () => {
         // 이메일 형식인지 확인
         if (item.includes("@")) {
           const [id] = item.split("@");
-          return { id, atId: `@${id}`, email: item };
+          return { 
+            id, 
+            atId: `@${id}`, 
+            atIdSpace: `@${id}`,
+            email: item 
+          };
         } else {
           // 이미 ID 형식이라면 그대로 사용
-          return { id: item, atId: `@${item}`, email: `${item}@kakaocorp.com` };
+          return { 
+            id: item, 
+            atId: `@${item}`, 
+            atIdSpace: `@${item}`,
+            email: `${item}@kakaocorp.com` 
+          };
         }
       } else {
         // ID를 이메일로 변환
         const id = item.startsWith("@") ? item.substring(1) : item;
-        return { id, atId: id.startsWith("@") ? id : `@${id}`, email: `${id}@kakaocorp.com` };
+        return { 
+          id, 
+          atId: id.startsWith("@") ? id : `@${id}`, 
+          atIdSpace: id.startsWith("@") ? id : `@${id}`,
+          email: `${id}@kakaocorp.com` 
+        };
       }
     });
 
     setOutput(results);
   };
 
-  const copyToClipboard = (type: "id" | "atId" | "email") => {
+  const copyToClipboard = (type: "id" | "atId" | "atIdSpace" | "email") => {
     let ref;
     let content = "";
 
@@ -62,6 +79,10 @@ const EmailConverter = () => {
       case "atId":
         ref = atIdOutputRef;
         content = output.map((item) => item.atId).join("\n");
+        break;
+      case "atIdSpace":
+        ref = atIdSpaceOutputRef;
+        content = output.map((item) => item.atIdSpace).join(" ");
         break;
       case "email":
         ref = emailOutputRef;
@@ -193,6 +214,27 @@ const EmailConverter = () => {
                 readOnly 
                 ref={atIdOutputRef}
                 value={output.map((item) => item.atId).join("\n")} 
+                className="min-h-[80px]"
+              />
+            </div>
+            
+            <div className="w-full">
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-gray-700">@ID @ID 형식</label>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => copyToClipboard("atIdSpace")}
+                  className="h-8"
+                >
+                  {copied.atIdSpace ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  <span className="ml-2">{copied.atIdSpace ? "복사됨" : "복사"}</span>
+                </Button>
+              </div>
+              <Textarea 
+                readOnly 
+                ref={atIdSpaceOutputRef}
+                value={output.map((item) => item.atIdSpace).join(" ")} 
                 className="min-h-[80px]"
               />
             </div>
