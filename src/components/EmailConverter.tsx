@@ -23,11 +23,11 @@ const EmailConverter = () => {
     email: false,
     notice: false,
   });
+  const [noticeOutput, setNoticeOutput] = useState<string>("");
   const idOutputRef = useRef<HTMLTextAreaElement>(null);
   const atIdOutputRef = useRef<HTMLTextAreaElement>(null);
   const atIdSpaceOutputRef = useRef<HTMLTextAreaElement>(null);
   const emailOutputRef = useRef<HTMLTextAreaElement>(null);
-  const noticeOutputRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
   const handleConversion = () => {
@@ -70,6 +70,23 @@ const EmailConverter = () => {
     });
 
     setOutput(results);
+    
+    // Generate the notice output with proper markdown formatting
+    let notice = "";
+    
+    if (title.trim()) {
+      notice += `#${title}\n\n`;
+    }
+    
+    if (description.trim()) {
+      notice += `${description}\n\n`;
+    }
+    
+    if (results.length > 0) {
+      notice += `>${results.map((item) => item.atIdSpace).join(" ")}`;
+    }
+    
+    setNoticeOutput(notice);
   };
 
   const copyToClipboard = (type: "id" | "atId" | "atIdSpace" | "email" | "notice") => {
@@ -94,13 +111,11 @@ const EmailConverter = () => {
         content = output.map((item) => item.email).join("\n");
         break;
       case "notice":
-        ref = noticeOutputRef;
-        // Add markdown formatting: # for title and > for @IDs
-        content = `# ${title}\n\n${description}\n\n> ${output.map((item) => item.atIdSpace).join(" ")}`;
+        content = noticeOutput;
         break;
     }
 
-    if (ref?.current) {
+    if (content) {
       navigator.clipboard.writeText(content).then(
         () => {
           setCopied({ ...copied, [type]: true });
@@ -313,9 +328,8 @@ const EmailConverter = () => {
                 </Button>
               </div>
               <Textarea 
-                readOnly 
-                ref={noticeOutputRef}
-                value={`# ${title}\n\n${description}\n\n> ${output.map((item) => item.atIdSpace).join(" ")}`}
+                value={noticeOutput}
+                onChange={(e) => setNoticeOutput(e.target.value)}
                 className="min-h-[120px]"
               />
             </div>
