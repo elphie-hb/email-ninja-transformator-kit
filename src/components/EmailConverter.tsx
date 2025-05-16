@@ -2,6 +2,7 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Copy, CopyCheck } from "lucide-react";
@@ -11,18 +12,22 @@ type ConversionType = "emailToId" | "idToEmail";
 
 const EmailConverter = () => {
   const [input, setInput] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [output, setOutput] = useState<{ id: string; atId: string; atIdSpace: string; email?: string }[]>([]);
   const [conversionType, setConversionType] = useState<ConversionType>("emailToId");
-  const [copied, setCopied] = useState<{ id: boolean; atId: boolean; atIdSpace: boolean; email: boolean }>({
+  const [copied, setCopied] = useState<{ id: boolean; atId: boolean; atIdSpace: boolean; email: boolean; notice: boolean }>({
     id: false,
     atId: false,
     atIdSpace: false,
     email: false,
+    notice: false,
   });
   const idOutputRef = useRef<HTMLTextAreaElement>(null);
   const atIdOutputRef = useRef<HTMLTextAreaElement>(null);
   const atIdSpaceOutputRef = useRef<HTMLTextAreaElement>(null);
   const emailOutputRef = useRef<HTMLTextAreaElement>(null);
+  const noticeOutputRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
   const handleConversion = () => {
@@ -67,7 +72,7 @@ const EmailConverter = () => {
     setOutput(results);
   };
 
-  const copyToClipboard = (type: "id" | "atId" | "atIdSpace" | "email") => {
+  const copyToClipboard = (type: "id" | "atId" | "atIdSpace" | "email" | "notice") => {
     let ref;
     let content = "";
 
@@ -87,6 +92,10 @@ const EmailConverter = () => {
       case "email":
         ref = emailOutputRef;
         content = output.map((item) => item.email).join("\n");
+        break;
+      case "notice":
+        ref = noticeOutputRef;
+        content = `${title}\n\n${description}\n\n${output.map((item) => item.atIdSpace).join(" ")}`;
         break;
     }
 
@@ -166,6 +175,33 @@ const EmailConverter = () => {
               </div>
             </TabsContent>
           </Tabs>
+
+          <div className="space-y-4 mt-6">
+            <div>
+              <label htmlFor="noticeTitle" className="block text-sm font-medium mb-2 text-gray-700">
+                제목
+              </label>
+              <Input
+                id="noticeTitle"
+                placeholder="제목을 입력하세요"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="noticeDescription" className="block text-sm font-medium mb-2 text-gray-700">
+                내용
+              </label>
+              <Textarea
+                id="noticeDescription"
+                placeholder="내용을 입력하세요"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
 
           <div className="flex justify-center mt-6">
             <Button onClick={handleConversion} className="bg-blue-600 hover:bg-blue-700">
@@ -261,6 +297,27 @@ const EmailConverter = () => {
                 />
               </div>
             )}
+
+            <div className="w-full">
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-gray-700">공지 형식</label>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => copyToClipboard("notice")}
+                  className="h-8"
+                >
+                  {copied.notice ? <CopyCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  <span className="ml-2">{copied.notice ? "복사됨" : "복사"}</span>
+                </Button>
+              </div>
+              <Textarea 
+                readOnly 
+                ref={noticeOutputRef}
+                value={`${title}\n\n${description}\n\n${output.map((item) => item.atIdSpace).join(" ")}`}
+                className="min-h-[120px]"
+              />
+            </div>
           </CardFooter>
         )}
       </Card>
